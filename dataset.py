@@ -172,7 +172,7 @@ class Dataset:
             pca = PCA(n_components=no_components)
             pca_components = pca.fit_transform(X)
             component_name = str(no_components)
-            #drop_component = str(no_components+1)
+
             # drop columns from '1' until and including 'self.len_embeddings'
             start = data.columns.get_loc('D1')
             end = data.columns.get_loc('D'+str(self.len_embeddings))  # Include the end column
