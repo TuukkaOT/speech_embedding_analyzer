@@ -1,5 +1,9 @@
 # speech_embedding_analyzer
-A tool for retrieving, processing and analyzing speech embeddings.
+
+A tool for analysing embeddings, e.g., from an XLS-R model fine-tuned for
+language identification. Your dataset should be in 'data' folder and be tab delimited.
+The dataset should at least contain a column 'language', 'language_family', and 'iso' with an iso639-3 code for each language, and
+the embedding dimensions should be as columns D1 onwards.
 
 Install the required pip packages in your environment:
 pip install -r requirements.txt
