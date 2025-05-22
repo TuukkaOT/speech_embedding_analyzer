@@ -3,7 +3,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from visualization import Visualizer
+from visualizer import Visualizer
 
 class Dataset:
     def __init__(self, data, config):
