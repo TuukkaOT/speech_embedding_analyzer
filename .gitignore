@@ -178,7 +178,7 @@ data/*
 plots/*
 !plots/.gitkeep
 # Except explicitly tracked files (e.g., samples)
-!data/embeddings.tsv
+#!data/embeddings.tsv
 
 # If you use VS Code
 .vscode/
