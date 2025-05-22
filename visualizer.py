@@ -18,8 +18,8 @@ class Visualizer:
                 self.config['no_components'] = len(self.data[0][self.config['transformation_class']].unique()) - 1    
             else:
                 self.config['no_components'] = len(self.data[self.config['transformation_class']].unique()) - 1
-
-        return self
+        # add coordinates to data
+        self.data = self.add_coordinates().data
 
     def get_linkage_matrix(self):    
         # check if self.data is a list

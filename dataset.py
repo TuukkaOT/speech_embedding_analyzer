@@ -118,6 +118,7 @@ class Dataset:
             print(missing_language_families[['language', 'iso']].groupby('language').first())
             # break the script
             raise ValueError("Missing language families in the data. Make sure your iso codes match Glottolog iso codes.")
+        return self
 
     def prepare_languages(self):
 
