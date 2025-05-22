@@ -172,3 +172,17 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Ignore all data files by default
+data/*
+plots/*
+# Except explicitly tracked files (e.g., samples)
+!data/embeddings.tsv
+
+# If you use VS Code
+.vscode/
+
+# macOS and Windows
+.DS_Store
+Thumbs.db
+
