@@ -50,7 +50,7 @@ if args['analysis'] == 'all':
     for analysis in analyses:
         args['analysis'] = analysis
         data = (Dataset(dataframe, args)
-            .clean_languages() # normalize language names
+            .prepare_languages() # normalize language names
             .sample_dataset() # sample dataset
             .scale_data() # scale data by subtracting mean
             .apply_dimensionality_reduction() # apply dimensionality reduction
@@ -61,7 +61,7 @@ else:
     print(f"Visualizing {analysis_dict[args['analysis']]}")
     # process dataset
     data = (Dataset(dataframe, args)
-        .clean_languages() # normalize language names
+        .prepare_languages() # normalize language names
         .sample_dataset() # sample dataset
         .scale_data() # scale data by subtracting mean
         .apply_dimensionality_reduction() # apply dimensionality reduction

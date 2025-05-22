@@ -69,7 +69,67 @@ class Dataset:
         self.data = dataframe_list
         return self
 
-    def clean_languages (self):
+
+    def add_metadata(self):
+        # add coordinates to data
+        # read 'data/coordinates.csv' file
+        language_metadata = pd.read_csv('data/iso_coordinates.tsv', sep='\t')
+        
+        if 'language_family' in self.data.columns:
+            print("Data already contains language families.")
+            # drop language_family column
+            language_metadata = language_metadata.drop(columns=['language_family'])
+        else:
+            print("Data does not contain language families. Adding language families.")
+
+        if 'latitude' in self.data.columns and 'longitude' in self.data.columns:
+            print("Data already contains coordinates.")
+            # drop latitude and longitude columns
+            language_metadata = language_metadata.drop(columns=['latitude', 'longitude'])
+        else:
+            print("Data does not contain coordinates. Adding coordinates.")
+            
+
+        # add coordinates to data
+        self.data = self.data.merge(language_metadata, on='iso', how='left')
+        
+        # Reorder columns
+        first_columns = ['iso', 'latitude', 'longitude', 'language', 'language_family']
+        other_columns = [col for col in self.data.columns if col not in first_columns]
+        self.data = self.data[first_columns + other_columns]
+
+        # if there are any missing coordinates, print the rows and break the script
+        if self.data['latitude'].isnull().any():
+            print("There are missing coordinates in the data.")
+            # print rows where coordinates are missing
+            missing_coordinates = self.data[self.data['latitude'].isnull()]
+            print("Missing coordinates for the following languages:")
+            print(missing_coordinates[['language', 'iso']])
+            # break the script
+            raise ValueError("Missing coordinates in the data. Make sure your iso codes match Glottolog iso codes.")
+        # if there are any missing language families, print the rows and break the script
+        if self.data['language_family'].isnull().any():
+            print("There are missing language families in the data.")
+
+            # print unique values of languages where language_family is null
+            missing_language_families = self.data[self.data['language_family'].isnull()]
+            
+            print("Missing language families for the following languages:")
+            print(missing_language_families[['language', 'iso']].groupby('language').first())
+            # break the script
+            raise ValueError("Missing language families in the data. Make sure your iso codes match Glottolog iso codes.")
+
+    def prepare_languages(self):
+
+        # check if self.data contains columns 'latitude' and 'longitude' and/or 'language_family'
+        if 'latitude' in self.data.columns and 'longitude' and 'language_family' in self.data.columns:
+            print("Data contains coordinates and language families.")
+        else:
+            print("Data does not contain coordinates or language families. Retrieveing coordinates from Glottolog file.")
+            self.data = self.add_metadata().data
+            return
+        
+
         # make all columns into strings
         self.data = self.data.map(str)
         
