@@ -18,8 +18,6 @@ class Visualizer:
                 self.config['no_components'] = len(self.data[0][self.config['transformation_class']].unique()) - 1    
             else:
                 self.config['no_components'] = len(self.data[self.config['transformation_class']].unique()) - 1
-        # add coordinates to data
-        self.data = self.add_coordinates().data
 
         return self
 
