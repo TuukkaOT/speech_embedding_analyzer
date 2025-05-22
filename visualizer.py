@@ -144,3 +144,7 @@ class Visualizer:
         ##########################################
 
         pass
+
+if __name__ == "__main__":
+    print("This is a module. Please run the main script.")
+    pass

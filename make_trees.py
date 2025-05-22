@@ -56,3 +56,7 @@ def neighbornet(matrix, labels):
     with open('plots/neighbornet.nex', 'w') as f:
         f.write(nexus_str)
     print("wrote neighbornet nexus file: plots/neighbornet.nex.")
+
+if __name__ == "__main__":
+    print("This is a module. Please run the main script.")
+    pass
