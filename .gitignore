@@ -177,6 +177,8 @@ cython_debug/
 data/*
 plots/*
 !plots/.gitkeep
+!data/.gitkeep
+
 # Except explicitly tracked files (e.g., samples)
 #!data/embeddings.tsv
 

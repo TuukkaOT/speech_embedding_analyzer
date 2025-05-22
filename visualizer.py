@@ -132,8 +132,8 @@ class Visualizer:
         # no legend
         plt.legend([],[], frameon=False)
         # save plot
-        plt.savefig('../plots/scatter_plot.png')
-        print("Wrote scatter plot to file: ../plots/scatter_plot.png.")
+        plt.savefig('plots/scatter_plot.png')
+        print("Wrote scatter plot to file: plots/scatter_plot.png.")
 
     def statistical_analysis(self):
         ##########################################

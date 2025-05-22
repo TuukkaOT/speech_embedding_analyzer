@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(description='This script visualizes embeddings.
 parser.add_argument('-f', '--file_path', type=str, help='Path to the TSV file. Default: data/embeddings.tsv', default='data/embeddings.tsv')
 parser.add_argument('-c', '--transformation_class', type=str, help='Classes for supervised dimensionality reduction (only applicable for LDA). Default: language.', default='language')
 parser.add_argument('-n', '--no_components', type=str, help='Number of dimensions after calculating dimensionality reduction, default: maximum for LDA (n_classes-1)', default='max')
-parser.add_argument('-a', '--analysis', type=str, help='What to analyze/visualize, (d)endrogram, (n)eighbornet, language (f)amily dendrograms, (c)onsensus tree, (s)scatter, statistical (a)nalyses, (all) visualizations. Default: dendrogram.', default='d')
+parser.add_argument('-a', '--analysis', type=str, help='What to analyze/visualize, (d)endrogram, (n)eighbornet, language (f)amily dendrograms, (c)onsensus tree, (s)scatter, statistical (a)nalyses, (all) visualizations. Default: dendrogram.', default='all')
 parser.add_argument('-m', '--method', type=str, help='Method for dimensionality reduction, pca or lda, default: lda', default='lda')
 parser.add_argument('-d', '--distance_metric', type=str, help='Metric for distance calculation', default='cosine')
 parser.add_argument('-v', '--analysis_class', type=str, help='Class used for analysis. Default: language.', default='language')

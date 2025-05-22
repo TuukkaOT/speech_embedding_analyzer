@@ -21,22 +21,22 @@ def linkage_to_newick(Z, leaf_names):
 def consensus_tree(linkage_matrices, leaf_names_list, family_names_list):
     newick_strs = [linkage_to_newick(linkage_matrix, leaf_names) for linkage_matrix, leaf_names in zip(linkage_matrices, leaf_names_list)]
     combined_newick_str = "\n".join(newick_strs)
-    with open('../plots/consensus_tree.nwk', 'w') as f:
+    with open('plots/consensus_tree.nwk', 'w') as f:
             f.write(combined_newick_str)
-    print("Wrote consensus tree to file: ../plots/consensus_tree.nwk.")
+    print("Wrote consensus tree to file: plots/consensus_tree.nwk.")
     #return combined_newick_str
 
 def language_family_trees(linkage_matrices, leaf_names_list, family_names_list):
     newick_strs = [linkage_to_newick(linkage_matrix, leaf_names) for linkage_matrix, leaf_names in zip(linkage_matrices, leaf_names_list)]
     combined_newick_str = "\n".join(newick_strs)
-    with open('../plots/language_family_trees.nwk', 'w') as f:
+    with open('plots/language_family_trees.nwk', 'w') as f:
             f.write(combined_newick_str)
     
 def single_tree(data):
     newick_str = linkage_to_newick(data[0], data[1])
-    with open('../plots/dendrogram.nwk', 'w') as f:
+    with open('plots/dendrogram.nwk', 'w') as f:
         f.write(newick_str)
-    print("Wrote dendrogram to file: ../plots/dendrogram.nwk.")
+    print("Wrote dendrogram to file: plots/dendrogram.nwk.")
 
 def neighbornet(matrix, labels):
     nexus_str = "#NEXUS\n\nBEGIN Taxa;\n\tDIMENSIONS ntax=%d;\n\tTAXLABELS\n" % len(matrix)
@@ -53,6 +53,6 @@ def neighbornet(matrix, labels):
     nexus_str += "\t;\nEND;\n"
 
     # write nexus_matrix to file
-    with open('../plots/neighbornet.nex', 'w') as f:
+    with open('plots/neighbornet.nex', 'w') as f:
         f.write(nexus_str)
-    print("wrote neighbornet nexus file: ../plots/neighbornet.nex.")
+    print("wrote neighbornet nexus file: plots/neighbornet.nex.")
