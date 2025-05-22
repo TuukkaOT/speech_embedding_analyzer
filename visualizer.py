@@ -4,6 +4,7 @@ import seaborn as sns
 from scipy.cluster.hierarchy import linkage
 from scipy.spatial.distance import squareform, pdist
 from make_trees import single_tree, consensus_tree, neighbornet, language_family_trees
+import pandas as pd
 
 class Visualizer:
     def __init__(self, data, config):
@@ -17,7 +18,35 @@ class Visualizer:
                 self.config['no_components'] = len(self.data[0][self.config['transformation_class']].unique()) - 1    
             else:
                 self.config['no_components'] = len(self.data[self.config['transformation_class']].unique()) - 1
-            
+        # add coordinates to data
+        self.data = self.add_coordinates().data
+
+    def add_coordinates(self):
+        
+        # add coordinates to data
+        # read 'data/coordinates.csv' file
+        coordinates = pd.read_csv('data/iso_coordinates.tsv', sep='\t')
+        
+        # add coordinates to data
+        self.data = self.data.merge(coordinates, on='iso', how='left')
+        
+        # Reorder columns
+        first_columns = ['iso', 'latitude', 'longitude']
+        other_columns = [col for col in self.data.columns if col not in first_columns]
+        self.data = self.data[first_columns + other_columns]
+
+        # if there are any missing coordinates, print the rows and break the script
+        if self.data['latitude'].isnull().any():
+            print("There are missing coordinates in the data.")
+            # print rows where coordinates are missing
+            missing_coordinates = self.data[self.data['latitude'].isnull()]
+            print("Missing coordinates for the following languages:")
+            print(missing_coordinates[['language', 'iso']])
+            # break the script
+            raise ValueError("Missing coordinates in the data.")
+
+        return self
+
     def get_linkage_matrix(self):    
         # check if self.data is a list
         if isinstance(self.data, list):
@@ -136,7 +165,17 @@ class Visualizer:
         print("Wrote scatter plot to file: plots/scatter_plot.png.")
 
     def statistical_analysis(self):
+
+        # check if self.data contains columns 'latitude' and 'longitude'
+        if 'latitude' in self.data.columns and 'longitude' in self.data.columns:
+            print("Data contains coordinates.")
+        else:
+            print("Data does not contain coordinates. Retrieveing coordinates from Glottolog file.")
+            self.data = self.add_coordinates().data
+            return
+        
         ##########################################
         # Add here the statistical analysis code #
         ##########################################
+
         pass

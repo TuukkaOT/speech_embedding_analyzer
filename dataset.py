@@ -155,12 +155,12 @@ class Dataset:
         if isinstance(self.data, list):
             print("Calculating means for chunks")
             for i in range(len(self.data)):
-                self.data[i] = self.data[i].groupby([self.analysis_class] + ['language_family']).mean(numeric_only=True).loc[:, 'D1':].reset_index()
+                self.data[i] = self.data[i].groupby([self.analysis_class] + ['language_family', 'iso']).mean(numeric_only=True).loc[:, 'D1':].reset_index()
         else:
             print("Calculating means for whole dataset")
             self.data = (
                 self.data
-                .groupby([self.analysis_class] + ['language_family'])
+                .groupby([self.analysis_class] + ['language_family', 'iso'])
                 .mean(numeric_only=True)
                 .loc[:, 'D1':].
                 reset_index()

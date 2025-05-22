@@ -28,8 +28,19 @@ parser.add_argument('-ag', '--agglomethod', type=str, help='Agglomerative cluste
 parser.add_argument('-e', '--len_embeddings', type=str, help='Dimensionality of the input embeddings. Default: 512.', default=512)
 parser.add_argument('-s', '--sample_size', type=int, help='Minimum sample size for analysis. Default: 20.', default=20)
 parser.add_argument('-r', '--random_seed', type=int, help='Random seed for sampling. Default: None.', default=None)
+
 # Convert arguments to dictionary
 args = vars(parser.parse_args())
+
+# dictionary for mapping analysis types to their descriptions
+analysis_dict = {
+    'd': 'a dendrogram',
+    'n': 'a neighbornet',
+    'f': 'language family dendrograms',
+    'c': 'a consensus tree',
+    's': 'a scatter plot',
+    'a': 'statistical analyses'
+}
 
 # Read dataset
 dataframe = pd.read_csv(args['file_path'], delimiter='\t')
@@ -47,6 +58,7 @@ if args['analysis'] == 'all':
             .visualize()) # visualize a plot depending on the analysis type
 
 else:
+    print(f"Visualizing {analysis_dict[args['analysis']]}")
     # process dataset
     data = (Dataset(dataframe, args)
         .clean_languages() # normalize language names
