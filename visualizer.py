@@ -19,16 +19,8 @@ class Visualizer:
             else:
                 self.config['no_components'] = len(self.data[self.config['transformation_class']].unique()) - 1
 
-    def get_linkage_matrix(self):    
-        # check if self.data is a list
-        if isinstance(self.data, list):
-            linkage_matrix = []
-            for i in range(len(self.data)):
-                last_component = len(self.data[i][self.config['transformation_class']].unique()) - 1
-                linkage_matrix.append(linkage(self.data[i].loc[:, 'D1':'D'+str(last_component)], method=self.config['agglomethod'], metric=self.config['distance_metric']))
-            
-        else:
-            linkage_matrix = linkage(self.data.loc[:, 'D1':'D'+str(self.config['no_components'])], method=self.config['agglomethod'], metric=self.config['distance_metric'])
+    def get_linkage_matrix(self, df):
+        linkage_matrix = linkage(df.loc[:, 'D1':'D'+str(self.config['no_components'])], method=self.config['agglomethod'], metric=self.config['distance_metric'])
         return linkage_matrix
     
     def distance_matrix(self):
@@ -44,7 +36,7 @@ class Visualizer:
         neighbornet(distance_matrix, labels)
 
     def plot_dendrogram(self):
-        linkage_matrix = self.get_linkage_matrix()
+        linkage_matrix = self.get_linkage_matrix(self.data)
         leaf_names = list(self.data[self.config['analysis_class']])
         # combine linkage matrix and leaf names so that i can send it to MakeTrees class
         combined_data = [linkage_matrix, leaf_names]
@@ -53,18 +45,18 @@ class Visualizer:
     def plot_family_dendrograms(self):
 
         # group self data by language family and make a list of dataframes
-        self.data = self.data.groupby('language_family')
+        dataframe = self.data.groupby('language_family')
         # make a list of dataframes from the groupby object
-        self.data = [group for _, group in self.data]
+        dataframes = [group for _, group in dataframe]
 
         # drop dataframes with less than 5 languages
-        self.data = [df for df in self.data if len(df) >= 5]
-        linkage_matrices = self.get_linkage_matrix()
+        dataframes = [df for df in dataframe if len(df) >= 5]
+        linkage_matrices = [self.get_linkage_matrix(df) for df in dataframes]
         leaf_names_list = []
         family_names_list = []
         for i in range(len(linkage_matrices)):
-            leaf_names = list(self.data[i]['language'])
-            family_names = list(self.data[i]['language_family'])
+            leaf_names = list(dataframe[i]['language'])
+            family_names = list(dataframe[i]['language_family'])
             leaf_names_list.append(leaf_names)
             family_names_list.append(family_names)
 
@@ -72,7 +64,7 @@ class Visualizer:
 
     def plot_consensus_tree(self):
 
-        linkage_matrices = self.get_linkage_matrix()
+        linkage_matrices = [self.get_linkage_matrix(df) for df in self.data]
         leaf_names_list = []
         family_names_list = []
         for i in range(len(linkage_matrices)):
