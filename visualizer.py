@@ -294,6 +294,7 @@ class Visualizer:
         distance_matrix = self.distance_matrix()
         max_dist = np.quantile(distance_matrix[distance_matrix>0], .05)
         languages = self.data['language'].values
+        print(languages)
         df = self.data
         unique_families = df['language_family'].unique()
         colors = plt.cm.get_cmap('tab20', len(unique_families)) 
@@ -314,30 +315,31 @@ class Visualizer:
          
             for i in range(len(neighbor)):
                 neighbor_row = df[df['language'] == neighbor[i]].iloc[0]
-                if mindist_tracker[lang][i] > max_dist:
-                    continue
-                lang_coords = [lang_row['latitude'], lang_row['longitude']]
-                neighbor_coords = [neighbor_row['latitude'], neighbor_row['longitude']]
-           
-                line_weight = (1./(mindist_tracker[lang][i]))*1.5
-                line_weight = np.min([8, line_weight])
-                opacity = min([1-mindist_tracker[lang][i]+0.2, 1])
-                family1 = df.loc[df['language'] == lang, 'language_family'].values[0]
-                family2 = df.loc[df['language'] == neighbor[i], 'language_family'].values[0]
-                dash_val= 5
-                color='white'
-                if family1 == family2:
-                    dash_val = 0
-                    color =  family_color_map.get(family1)
-                folium.PolyLine(
-                    locations=[lang_coords, neighbor_coords],
-                    color=color,
-                    weight=line_weight,  # Thickness based on frequency
-                    opacity=opacity,
-                    dash_array=dash_val
-                ).add_to(m)
+                if mindist_tracker[lang][i] < max_dist:
+                    #continue
+                    lang_coords = [lang_row['latitude'], lang_row['longitude']]
+                    neighbor_coords = [neighbor_row['latitude'], neighbor_row['longitude']]
+            
+                    line_weight = (1./(mindist_tracker[lang][i]))*1.5
+                    line_weight = np.min([8, line_weight])
+                    opacity = min([1-mindist_tracker[lang][i]+0.2, 1])
+                    family1 = df.loc[df['language'] == lang, 'language_family'].values[0]
+                    family2 = df.loc[df['language'] == neighbor[i], 'language_family'].values[0]
+                    dash_val= 5
+                    color='white'
+                    if family1 == family2:
+                        dash_val = 0
+                        color =  family_color_map.get(family1)
+                    folium.PolyLine(
+                        locations=[lang_coords, neighbor_coords],
+                        color=color,
+                        weight=line_weight,  # Thickness based on frequency
+                        opacity=opacity,
+                        dash_array=dash_val
+                    ).add_to(m)
+                    add_marker(neighbor_row, m, family_color_map)
                 add_marker(lang_row, m, family_color_map)
-                add_marker(neighbor_row, m, family_color_map)
+                
                 folium.Marker(
                     location=[lang_row['latitude'], lang_row['longitude']+1],
                     popup=folium.Popup('<i>The center of map</i>'),
@@ -350,13 +352,43 @@ class Visualizer:
                     
         m.save("languages_map.html")
         input()
+
     def statistical_analysis(self):
-
+ 
+        from scipy.stats import pearsonr
+        from geopy.distance import great_circle
+        def geo_distance_matrix(df):
+           
+            def haversine_distance(lat1, lon1, lat2, lon2):
+                return great_circle((lat1, lon1), (lat2, lon2)).kilometers
+            n = len(df)
+            distance_matrix = np.zeros((n, n))
+            for i in range(n):
+                for j in range(n):
+                
+                    distance_matrix[i, j] = haversine_distance(
+                        df.iloc[i]['latitude'], df.iloc[i]['longitude'],
+                        df.iloc[j]['latitude'], df.iloc[j]['longitude']
+                )
+           
+            return distance_matrix
         
-        ##########################################
-        # Add here the statistical analysis code #
-        ##########################################
+        def correlate(matrix1, matrix2):
+            triu_indices = np.triu_indices_from(matrix1, k=1)
+            # Flatten the matrices
+            flat1 = matrix1[triu_indices]
+            flat2 = matrix2[triu_indices]
+            print(flat1[flat1<=0])
+            print(flat2[flat2<=0])
+            
+            return(pearsonr(flat1, flat2))
 
+        # Calculate the distance matrix for the languages
+
+        geo_matrix = geo_distance_matrix(self.data)
+        embedding_matrix = self.distance_matrix()
+        correlation = correlate(np.log(geo_matrix), embedding_matrix)
+        print(f"Pearson correlation between geographical distance and embedding distance: {correlation[0]:.4f} (p-value: {correlation[1]:.4e})")
         pass
 
 if __name__ == "__main__":
