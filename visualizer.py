@@ -248,6 +248,7 @@ class Visualizer:
 
         import folium
         from matplotlib import colors as mcolors
+
         def add_marker(lang_row, map_obj, color_map):
            
             family = lang_row['language_family']
@@ -350,14 +351,17 @@ class Visualizer:
                     )).add_to(m)
             #if mindist_tracker[lang][i] < min_dist:
                     
-        m.save("languages_map.html")
-        input()
+        m.save("plots/languages_map.html")
+        print("map saved to plots/languages_map.html")
+
+
 
     def statistical_analysis(self):
  
         from scipy.stats import pearsonr
         from geopy.distance import great_circle
-        def geo_distance_matrix(df):
+        
+        def _geo_distance_matrix(df):
            
             def haversine_distance(lat1, lon1, lat2, lon2):
                 return great_circle((lat1, lon1), (lat2, lon2)).kilometers
@@ -373,23 +377,49 @@ class Visualizer:
            
             return distance_matrix
         
-        def correlate(matrix1, matrix2):
+
+        def _correlate(matrix1, matrix2):
+            # Calculate the Pearson correlation coefficient between the upper triangular parts of two matrices, excluding the diagonal
             triu_indices = np.triu_indices_from(matrix1, k=1)
-            # Flatten the matrices
             flat1 = matrix1[triu_indices]
             flat2 = matrix2[triu_indices]
-            print(flat1[flat1<=0])
-            print(flat2[flat2<=0])
-            
             return(pearsonr(flat1, flat2))
 
-        # Calculate the distance matrix for the languages
+    
+      
+        lex_dist_matrix_df = pd.read_csv('asjp_lexical_distances.csv')
+        df = self.data.copy()
+        # match iso codes in the dataset with the ASJP lexical distances
+        iso_replacements = {"nno":"nor", # includes both bokmål and nynorsk
+                    "sqi":"alb", # albanian,
+                    "mon":"khk", # major mongolian variant  
+                    "uzb":"uzn", # guessing north uzbek, the official variant
+                    "pus":"pst", # pashto -> central pashto
+                    "ory":"ori", # oriya -> odia
+                    "ekk":"est"}
 
-        geo_matrix = geo_distance_matrix(self.data)
-        embedding_matrix = self.distance_matrix()
-        correlation = correlate(np.log(geo_matrix), embedding_matrix)
-        print(f"Pearson correlation between geographical distance and embedding distance: {correlation[0]:.4f} (p-value: {correlation[1]:.4e})")
-        pass
+        df['iso'] = df['iso'].replace(iso_replacements)
+        df = df[df['iso'].isin(lex_dist_matrix_df['iso'])]
+        df = df.sort_values(by='iso').reset_index(drop=True)
+        
+        lex_dist_matrix = np.array(lex_dist_matrix_df.values[:, 1:], dtype=float)  # Exclude the 'iso' column
+        emb_dist_matrix = squareform(pdist(df.loc[:, 'D1':'D'+str(self.no_components)], metric=self.metric))
+        geo_dist_matrix = _geo_distance_matrix(df)
+
+        # transforms for normalizing distributions as in the paper
+        geo_dist_matrix = np.sqrt(geo_dist_matrix + 1e-6)  # Add small constant to avoid log(0)
+        emb_dist_matrix = np.exp(emb_dist_matrix)
+        lex_dist_matrix = np.exp(lex_dist_matrix)
+     
+       
+        # calculate the Pearson correlation coefficients   
+        geo_emb_correlation = _correlate(emb_dist_matrix, geo_dist_matrix)
+        lex_emb_correlation = _correlate(emb_dist_matrix,lex_dist_matrix)
+        lex_geo_correlation = _correlate(lex_dist_matrix, geo_dist_matrix)
+        print(f"Pearson correlation between embedding distance and lexical distance: {lex_emb_correlation[0]:.4f} (p-value: {lex_emb_correlation[1]:.4e})")
+        print(f"Pearson correlation between embedding distance and geographical distance: {geo_emb_correlation[0]:.4f} (p-value: {geo_emb_correlation[1]:.4e})")
+        print(f"Pearson correlation between geographical distance and lexical distance: {lex_geo_correlation[0]:.4f} (p-value: {lex_geo_correlation[1]:.4e})")
+        
 
 if __name__ == "__main__":
     print("This is a module. Please run the main script.")

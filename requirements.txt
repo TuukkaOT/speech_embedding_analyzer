@@ -20,3 +20,4 @@ threadpoolctl==3.6.0
 tqdm==4.67.1
 tzdata==2025.2
 folium==0.19.6
+geopy
