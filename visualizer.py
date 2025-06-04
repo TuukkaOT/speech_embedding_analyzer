@@ -240,7 +240,8 @@ class Visualizer:
         ax.tick_params(axis='y', pad=2)  # Reduce y-axis label padding
      
         plt.tight_layout()
-        plt.savefig('plots/confusion_matrix.png')
+        plt.savefig('plots/distance_matrix.png')
+        print("Wrote distance matrix to file: plots/confusion_matrix.png")
         #plt.show()
        
 
@@ -295,7 +296,7 @@ class Visualizer:
         distance_matrix = self.distance_matrix()
         max_dist = np.quantile(distance_matrix[distance_matrix>0], .05)
         languages = self.data['language'].values
-        print(languages)
+      
         df = self.data
         unique_families = df['language_family'].unique()
         colors = plt.cm.get_cmap('tab20', len(unique_families)) 
@@ -352,7 +353,7 @@ class Visualizer:
             #if mindist_tracker[lang][i] < min_dist:
                     
         m.save("plots/languages_map.html")
-        print("map saved to plots/languages_map.html")
+        print("Wrote map to file: plots/languages_map.html")
 
 
 
@@ -360,7 +361,7 @@ class Visualizer:
  
         from scipy.stats import pearsonr
         from geopy.distance import great_circle
-        
+
         def _geo_distance_matrix(df):
            
             def haversine_distance(lat1, lon1, lat2, lon2):
@@ -385,7 +386,18 @@ class Visualizer:
             flat2 = matrix2[triu_indices]
             return(pearsonr(flat1, flat2))
 
-    
+        def _regress(pred1, pred2, target):
+            # Perform linear regression to predict target from pred1 and pred2
+            from sklearn.linear_model import LinearRegression
+            triu_indices = np.triu_indices_from(pred1, k=1)
+            pred1 = pred1[triu_indices]
+            pred2 = pred2[triu_indices]
+            target = target[triu_indices]
+            model = LinearRegression()
+            X = np.column_stack((pred1, pred2))
+            model.fit(X, target)
+            return np.sqrt(model.score(X,target)) #np.sqrt(r2_score(target, model.predict(X)))
+            
       
         lex_dist_matrix_df = pd.read_csv('asjp_lexical_distances.csv')
         df = self.data.copy()
@@ -397,29 +409,33 @@ class Visualizer:
                     "pus":"pst", # pashto -> central pashto
                     "ory":"ori", # oriya -> odia
                     "ekk":"est"}
-
+      
         df['iso'] = df['iso'].replace(iso_replacements)
         df = df[df['iso'].isin(lex_dist_matrix_df['iso'])]
         df = df.sort_values(by='iso').reset_index(drop=True)
         
         lex_dist_matrix = np.array(lex_dist_matrix_df.values[:, 1:], dtype=float)  # Exclude the 'iso' column
         emb_dist_matrix = squareform(pdist(df.loc[:, 'D1':'D'+str(self.no_components)], metric=self.metric))
+       
         geo_dist_matrix = _geo_distance_matrix(df)
 
         # transforms for normalizing distributions as in the paper
         geo_dist_matrix = np.sqrt(geo_dist_matrix + 1e-6)  # Add small constant to avoid log(0)
         emb_dist_matrix = np.exp(emb_dist_matrix)
         lex_dist_matrix = np.exp(lex_dist_matrix)
-     
+      
        
         # calculate the Pearson correlation coefficients   
         geo_emb_correlation = _correlate(emb_dist_matrix, geo_dist_matrix)
         lex_emb_correlation = _correlate(emb_dist_matrix,lex_dist_matrix)
         lex_geo_correlation = _correlate(lex_dist_matrix, geo_dist_matrix)
+        # calculate the regression coefficients
+        print("\nStatistical analysis results: (small differences from the paper are due to LDA transform using all 106 instead of the 102 languages used for correlations")  
         print(f"Pearson correlation between embedding distance and lexical distance: {lex_emb_correlation[0]:.4f} (p-value: {lex_emb_correlation[1]:.4e})")
         print(f"Pearson correlation between embedding distance and geographical distance: {geo_emb_correlation[0]:.4f} (p-value: {geo_emb_correlation[1]:.4e})")
         print(f"Pearson correlation between geographical distance and lexical distance: {lex_geo_correlation[0]:.4f} (p-value: {lex_geo_correlation[1]:.4e})")
-        
+        geo_lex_regression = _regress(geo_dist_matrix, lex_dist_matrix, emb_dist_matrix)
+        print(f"\nCorrelation from 'full' model,  geographical and lexical distance predicting embedding distance: {geo_lex_regression:.4f}\n")
 
 if __name__ == "__main__":
     print("This is a module. Please run the main script.")

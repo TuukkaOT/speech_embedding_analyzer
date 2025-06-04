@@ -6,8 +6,10 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from visualizer import Visualizer
 
 class Dataset:
-    def __init__(self, data, config):
-        self.data = data
+    def __init__(self, data, config,analysis_method='standard'):
+        self.data = data 
+        self.language_embeddings = None
+        self.meta_columns = []
         self.classes = config['transformation_class']
         self.analysis_class = config['analysis_class']
         self.components = config['no_components']
@@ -16,14 +18,30 @@ class Dataset:
         self.random_seed = config['random_seed']
         self.sample_size = config['sample_size']
         self.config = config
-        self.analysis_method = config['analysis']
+        self.analysis_method = analysis_method
         
     def visualize(self):
         print("Visualizing data")
         visualizer = Visualizer(self.data, self.config)
+      
+       
         # Call the appropriate visualization method, based on the visualization_type
-        if self.analysis_method == 'd':
+        if self.analysis_method == 'standard':
+            visualizer.statistical_analysis()
             visualizer.plot_dendrogram()
+            visualizer.plot_neighbornet()
+            visualizer.plot_scatter()
+            visualizer.plot_map()
+            visualizer.plot_distance_matrix()
+
+        elif self.analysis_method == 'consensus':
+            visualizer.plot_consensus_tree()
+
+        elif self.analysis_method == 'family':
+            visualizer.plot_family_dendrograms()
+        
+        """
+
         elif self.analysis_method == 'n':
             visualizer.plot_neighbornet()
         elif self.analysis_method == 'f':
@@ -34,9 +52,10 @@ class Dataset:
             visualizer.plot_scatter()
         elif self.analysis_method in ['a']:
             visualizer.statistical_analysis()
+        """
 
     def sample_dataset(self):
-        if self.analysis_method == 'c':
+        if self.analysis_method == 'consensus':
             # keep only languages with at least sample_size samples
             self.data = self.data.groupby('language').filter(lambda x: len(x) >= 1000)
             
@@ -51,7 +70,9 @@ class Dataset:
                     self.data.groupby('language', group_keys=False)
                     .apply(lambda x: x.sample(n=min(len(x), 1000), random_state=self.random_seed))
                     )
+          
             print("Number of unique languages with minimum"+str(self.sample_size)+" samples: ", len(self.data['language'].unique()))
+       
         return self
 
         
@@ -92,6 +113,8 @@ class Dataset:
 
         # add coordinates to data
         self.data = self.data.merge(language_metadata, on='iso', how='left')
+        self.meta_columns =  ~self.data.columns.str.startswith('D')
+        
         
         # Reorder columns
         first_columns = ['iso', 'latitude', 'longitude', 'language', 'language_family']
@@ -128,11 +151,12 @@ class Dataset:
         else:
             print("Data does not contain coordinates or language families. Retrieveing coordinates from Glottolog file.")
             self.data = self.add_metadata().data
-            return
+        
+            
         
 
-        # make all columns into strings
-        self.data = self.data.map(str)
+        # make all columns into strings ANT:why, it takes minutes?
+        #self.data = self.data.map(str)
         
         # trim leading and trailing whitespaces
         self.data['language'] = self.data['language'].str.strip()
@@ -143,6 +167,11 @@ class Dataset:
         # make iso as string
         
         self.data['iso'] = self.data['iso'].astype(str)
+        self.meta_columns =  self.data.columns[~self.data.columns.str.startswith('D')].tolist()
+        # make sure that the embedding columns are in the right order
+        embedding_dim = len([col for col in self.data.columns if col.startswith('D')])
+        self.data = self.data[[col for col in self.data.columns if not col.startswith('D')] + [f'D{i}' for i in range(1,embedding_dim+1)]]
+       
         return self
 
     def scale_data(self):
@@ -150,11 +179,13 @@ class Dataset:
         # Standardize data
         scaler = StandardScaler(with_std=False)
         last_emb_dim = 'D' + str(self.len_embeddings)
+        
         self.data.loc[:, 'D1':last_emb_dim] = scaler.fit_transform(self.data.loc[:, 'D1':last_emb_dim])
-        if self.analysis_method == 'r':
-            self.chunks_for_robustness()
-        if self.analysis_method == 'c':
+        #if self.analysis_method == 'r':
+        #    self.chunks_for_robustness()
+        if self.analysis_method == 'consensus':
             self.chunks_for_consensus_tree()
+        
         return self
     
 
@@ -188,7 +219,7 @@ class Dataset:
             component_name = str(no_components)
             start = data.columns.get_loc('D1')
             end = data.columns.get_loc('D'+str(int(self.len_embeddings)))  # Include the end column
-            data = data.drop(columns=data.columns[start:end])
+            data = data.drop(columns=data.columns[start:end+1])
 
             # add lda components to data as columns '1' onwards
             lda_columns = ['D'+str(i) for i in range(1, lda_components.shape[1] + 1)]
@@ -196,7 +227,7 @@ class Dataset:
 
             # Update `self.data`
             data = pd.concat([data, lda_df], axis=1).copy()
-
+        
         return data
         
     
@@ -213,6 +244,7 @@ class Dataset:
         
     
     def get_means(self):
+    
         if isinstance(self.data, list):
             print("Calculating means for chunks")
             for i in range(len(self.data)):
@@ -222,10 +254,12 @@ class Dataset:
             self.data = (
                 self.data
                 .groupby([self.analysis_class] + ['language_family', 'iso'])
-                .mean(numeric_only=True)
-                .loc[:, 'D1':].
-                reset_index()
+                .mean(numeric_only=True).reset_index()
+                #.loc[:, 'D1':].
+                #reset_index()
             )
+       
+
         return self
     
 if __name__ == "__main__":
