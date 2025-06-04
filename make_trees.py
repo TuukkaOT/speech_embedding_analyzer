@@ -37,6 +37,7 @@ def language_family_trees(linkage_matrices, leaf_names_list, family_names_list):
     with open('plots/language_family_trees.nwk', 'w') as f:
             f.write(combined_newick_str)
     print("Wrote language family trees to file: plots/language_family_trees.nwk.")
+    
 def single_tree(data):
     # create a single tree from a linkage matrix and leaf names
     newick_str = linkage_to_newick(data[0], data[1])

@@ -178,6 +178,7 @@ data/*
 plots/*
 !plots/.gitkeep
 !data/.gitkeep
+!/data/sample_dataset.pkl
 
 # Except explicitly tracked files (e.g., samples)
 #!data/embeddings.tsv

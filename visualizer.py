@@ -48,16 +48,13 @@ class Visualizer:
         # group self data by language family and make a list of dataframes
         dataframe = self.data.groupby('language_family')
         # make a list of dataframes from the groupby object
-        dataframes = [group for _, group in dataframe]
-
-        # drop dataframes with less than 5 languages
-        dataframes = [df for df in dataframe if len(df) >= 5]
+        dataframes = [group for _, group in dataframe if len(group) >= 5]        
         linkage_matrices = [self.get_linkage_matrix(df) for df in dataframes]
         leaf_names_list = []
         family_names_list = []
         for i in range(len(linkage_matrices)):
-            leaf_names = list(dataframe[i]['language'])
-            family_names = list(dataframe[i]['language_family'])
+            leaf_names = list(dataframes[i]['language'])
+            family_names = list(dataframes[i]['language_family'])
             leaf_names_list.append(leaf_names)
             family_names_list.append(family_names)
 

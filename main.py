@@ -3,7 +3,7 @@ import argparse
 
 from dataset import Dataset
 
-TOY_DATASET = False
+TOY_DATASET = True
 
 """
 This is a python script for analysing embeddings, e.g., from an XLS-R model fine-tuned for
@@ -19,7 +19,7 @@ Current implementation does not yet generalize, main function is to reproduce th
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='This script visualizes embeddings. You can choose which classes to use for the LDA, how many components to calculate, what to visualize, and the method for dimensionality reduction. The default is to calculate the maximum number of components for the LDA, and to run all available visualizations. The default method for dimensionality reduction is LDA, and the default distance metric for the embeddings is cosine.',  epilog='The data should be in a tab delimited text file with at least iso codes and language names, followed by columns named D1 onwards.')
-parser.add_argument('-f', '--file_path', type=str, help='Path to the TSV file. Default: data/embeddings.tsv', default='data/embeddings.tsv')
+parser.add_argument('-f', '--file_path', type=str, help='Path to the pickle file. Default: data/embeddings.pkl', default='data/embeddings.pkl')
 parser.add_argument('-c', '--transformation_class', type=str, help='Classes for supervised dimensionality reduction (only applicable for LDA). Default: language.', default='language')
 parser.add_argument('-n', '--no_components', type=str, help='Number of dimensions after calculating dimensionality reduction, default: maximum for LDA (n_classes-1)', default='max')
 
@@ -40,7 +40,7 @@ if TOY_DATASET:
     dataframe = pd.read_pickle('data/sample_dataset.pkl')
     print("Using heavily reduced dataset for functionality testing.")
 else:
-    dataframe = pd.read_csv(args['file_path'], delimiter='\t')
+    dataframe = pd.read_pickle(args['file_path'])
 
 
 analyses = [
