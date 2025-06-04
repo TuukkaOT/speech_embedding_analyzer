@@ -8,8 +8,11 @@ the embedding dimensions should be as columns D1 onwards.
 Install the required pip packages in your environment:
 pip install -r requirements.txt
 
-To create all available visualizations, run the "main.py" script without arguments. The embedding file needs to be in data folder as "embeddings.pkl".
+To create the visualizations and analyses, run the 'main.py' script without arguments.
 
 If your embeddings file does not contain columns 'latitude' and 'longitude', the script will try to match the iso codes with coordinates from Glottolog. If there are iso codes not corresponding to coordinates in Glottolog, the script will raise an error.
 
 The Nexus and Newick tree files have been tested to work on Splitstree 6.4.13.
+
+NOTE:
+At the moment only a small sample dataset is available in the repository as 'embeddings_toy_dataset.pkl'. To run all the analyses on a full dataset, the embedding file should to be in data folder as "embeddings.pkl" and the TOY_DATASET variable to be set to 'False' in 'main.py'.

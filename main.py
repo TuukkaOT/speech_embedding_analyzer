@@ -13,7 +13,6 @@ the embedding dimensions should be as columns D1 onwards. If you want to use 'ac
 make sure you have 'pred_label' column with iso codes that are in the same format as 'iso' column.
 NOTE:
 Current implementation does not yet generalize, main function is to reproduce the results of a submitted paper.
-
 """
 
 
