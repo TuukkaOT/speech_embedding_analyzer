@@ -17,4 +17,4 @@ The Nexus and Newick tree files have been tested to work on Splitstree 6.4.13.
 NOTE:
 ⚠️ At the moment the analyzer is only intended for reproducing the results of a submitted paper and thus runs only on the accompanying dataset. ⚠️
 
-As of now a small sample dataset is available in the repository as 'embeddings_toy_dataset.pkl'. To run all the analyses on the full dataset, the embedding file should to be in data folder as "embeddings.pkl" and the TOY_DATASET variable to be set to 'False' in 'main.py'.
+As of now a small sample dataset is available in the repository as 'embeddings_toy_dataset.pkl'. To run all the analyses on the full dataset, the embedding file should be in the data folder as "embeddings.pkl" and the TOY_DATASET variable should be set to 'False' in 'main.py'.
